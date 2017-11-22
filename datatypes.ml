@@ -1,54 +1,64 @@
-(* Vojne čarodejov se nadaljujejo. *)
+(* The wizard wars are raging. *)
 
-(* Čarodeji, ki se borijo v vojnah so pripadniki teh treh ras.  *)
+(* The wizards combating in this war are of these races.  *)
 type race = Orc | Hobbit | Human
 
 
-(* Uroki [spells] prihajajo iz treh šol [school] magije: firewall in blaze sta ognjena uroka [Fire],
-   resurrect in cripple sta nekromantska [Necrotic], in renounce ter
-   banish sta angelska [Angelic].
-   Definiraj tipa, ki predstavljata različne uroke in šole magije.
+(* There are spells of three schools of magic: firewall and blaze are fire
+   spells, resurrect and cripple are of the necrotic school, and renounce and
+   banish are angelic.
+
+   Define a type to represent the schools, and a type of spells.
 *)
 
 
-type school = Fire | Necrotics | Angelic
+type school = Fire | Necrotic | Angelic
 
 
 type spell = Firewall | Blaze | Resurrect | Cripple | Renounce | Banish 
 
-(* Veščine [skills], ki jih je čarodej osvojil, so seznam vseh urokov,
-   ki jih lahko hitro izvede. Definiraj tip `skills'. *)
+(* The skills a wizard has mastered are the list of spells he can cast in one
+   round. Define a type `skills'. *)
 
-
-
-(* Čarodeja opišemo z imenom, številom življenskih točk [hp], sposobnost [ability]
-   ki jo predstavimo s številom točk mane, raso [race] in veščino [skills].
-   To shranimo kot zapisni tip (record). *)
+type skills = spell list    
 
 type mana = int
 type health = int
 
-type wizard = {name : string; }
+(* A wizard has to be given a name, a number of hitpoints (hp), an ability
+   level of mana, a race, and the skills he has mastered. Use a record to
+   represent this. *)
+type wizard = {name : string; hp : health ; ability : mana; race : race; skills : skills}
 
 
-(* Napiši funkcijo ki vsakemu uroku priredi primerno šolo magije. *)
+(* Write a function that indicates for each spell which school it belongs to. *)
 let school_of_spell = function
-  () -> ()
+  | Firewall | Blaze -> Fire
+  | Resurrect | Cripple -> Necrotic
+  | Renounce | Banish -> Angelic
 
-(* Glede na tabelo napiši funkcijo, ki uroku priredi količino mane,
-   ki jo čarodej potrebuje za izvršitev uroka:
+(* Write a function that computes the mana each spell uses. The values are:
   blaze : 420
   firewall : 35
   renounce : 17
   banish : 103
   resurrect : 178
   cripple : 250
-   Namig: Lahko si pomagaš z regex-replace v Notepad++
- *)
-let mana_of_spell = failwith "todo"
 
-(* Ustvari nekaj primerov čarodejov, tako kot je prikazano na primeru Merlina.
-   Ponovno si lahko pomagaš s regex-replace.*)
+   Hint: use regex-replace in Notepad++
+ *)
+ 
+ let mana_of_spell = function
+	| Firewall -> 35
+	| Blaze -> 420
+	| Resurrect -> 178
+	| Cripple -> 250
+	| Renounce -> 17
+	| Banish -> 103
+ 
+ 
+
+(* Use regex-replace in Notepad++ to build a few example wizards, like merlin *)
 (*
 name : "Frodo",      ability : 53,   hp : 1000,  skills : [Renounce],                      race : Hobbit
 name : "Ajitam",     ability : 1337, hp : 7331,  skills : [Firewall; Resurrect; Firewall], race : Hobbit
@@ -58,72 +68,94 @@ name : "Snoop Dogg", ability : 420,  hp : 4000,  skills : [Blaze],              
 *)
 
 (* let merlin = {name = "Merlin";   ability = 1832; hp = 9001; skills = [Renounce; Banish];  race = Human} *)
-let frodo =  failwith "todo"
-let ajitam = failwith "todo"
-let mrDuck = failwith "todo"
-let kYloReN = failwith "todo"
-let snoop_dogg = failwith "todo"
+let frodo = {name = "Frodo"; ability = 53; hp = 1000;  skills = [Renounce]; race = Hobbit}
+let ajitam = {name = "Ajitam"; ability = 1337; hp = 7331;  skills = [Firewall; Resurrect; Firewall]; race = Hobbit}
+let mr_duck = {name = "Mr Duck"; ability = 7; hp = 90000; skills = [Cripple]; race = Orc}
+let kylo = {name = "Kylo Ren"; ability = 589; hp = 90; skills = [Resurrect]; race = Human}
+let snoop= {name = "Snoop Dogg"; ability = 420; hp = 4000;  skills = [Blaze]; race = Orc}
+let merlin = {name = "Merlin";   ability = 1832; hp = 9001; skills = [Renounce; Banish]; race = Human}
 
 
-(* Napiši funkcijo, ki iz seznama čarodejev vrne čarodeja z največ mane. *)
+(* Write a function that computes the wizard with the most mana. *)
 let rec strongest_wizard (wizards : wizard list) : wizard option =
-  failwith "todo"
+	match wizards with
+	| [] -> None
+	| hd :: tl -> 
+		let strongest_tl = strongest_wizard tl in
+		(match strongest_tl with
+		| None -> Some hd
+		| Some x -> if hd.ability > x.ability
+			then Some hd
+			else Some x
+			)
 
-(* Posploši funkcijo strongest_wizard na funkcijo max_list, ki sprejme seznam
-   in dodatno funkcijo dveh elementov max : 'a -> 'a -> 'a in vrne maksimalni element seznama
-   glede na funkcijo max.
+(* Generalise strongest_wizard to a function max_list that computes the max of
+   an arbitrary lists of type 'a.
+
+   It takes as additional argument a function
+     max : 'a -> 'a -> 'a
+   that is used for taking the maximum between two elements.
+*)
+
+let rec max_list (xs : 'a list) (max : 'a -> 'a -> 'a) : 'a option =
+	match xs with
+	| [] -> None
+	| hd :: tl ->
+		let max_tl = max_list tl max in
+		(match max_tl with
+		| None -> Some hd
+		| Some x -> (* Some(max hd x) *)
+			let z = max hd x in
+			Some z
+			)
+		
+		
+(* Races have either high, normal, or low vulnerability to each school of
+   magic. Represent these possibilities as a variant type. *)
+
+type vulnerability = Normal | High | Low
+
+(* Write a function that computes the following vulnerabilities:
+   Low vulnerability for orcs:necrotic, hobbits:fire, humans:angelic,
+   High vulnerability    hobbit:necrotic, human:fire, orc:angelic
+   otherwise normal
+  *)
+
+let effectiveness (school : school) (race : race) : vulnerability =
+	match (school, race) with
+	| (Necrotic, Orc) | (Fire, Hobbit) | (Angelic, Human) -> Low
+	| (Necrotic, Hobbit) | (Fire, Human) | (Angelic, Orc) -> High
+	| (_,_) -> Normal
+
+
+(* Write a function that computes how vulnerable a wizard is to a spell *)
+let vulnerable = ()
+
+
+(* Write a function that computes a damage coefficient. High vulnerability
+   incurs double damage, low vulnerability half damage. *)
+
+
+(* Write a function that calculates how much damages a spell causes to a
+   wizard, computed as the mana it uses times the vulnerability coefficient.
+   Hint: float_of_int
 *)
 
 
-
-(* Rase imajo različno občutljivost [vulnerability] na določene šole magije.
-   Napiši tip s katerim lahko izraziš kdaj ima rasa visoko [High], navadno [Normal]
-   ali pa nizko [Low] občutljivost na urok. *)
+(* Write a function that calculates the stats of a wizard after getting
+   attacked by a particular spell.  *)
 
 
-(* Napiši funkcijo, ki glede na šolo uroka in raso izračuna občutljivost.
-   Low za:     orcs:necrotic, hobbits:fire, humans:angelic,
-   High za:    hobbit:necrotic, human:fire, orc:angelic
-   Sicer vrne Normal
-*)
+(* Write a function cast_spells that casts each of the skills of a wizard, or
+   as many as he has mana for. Return the updated caster and the list of
+   spells he managed to cast *)
+let cast_spells (caster : wizard) : wizard * spell list = failwith "todo"
 
-(* let effectiveness (school : school) (race : race) : vulnerability =
-...
-*)
-
-(* Zapiši funkcijo, ki za čarodeja izračuna njegovo občutljivost na podani urok. *)
-let vulnerable = failwith "todo"
-
-
-(* Občutljivost se v boju izrazi kot koeficient škode, ki jo utrpi čarodej, če ga urok zadane.
-   Zapiši funkcijo, ki glede na občutljivost vrne primeren koeficient, tako da čarodej z nizko
-   občutljivostjo utrpi le pol škode, čarodej z visoko občutljivostjo pa dvakratnik.*)
-
-
-(* Vsak urok naredi toliko škode, kot je potrebnih točk mane za izvršitev uroka.
-   Napiši funkcijo, ki glede na urok in čarodeja izračuna koliko škode utrpi,
-   če ga urok zadane.
-   Namig: za pretvarjanje med int in float se uporabljata funkciji float_of_int in
-   int_of_float.
-*)
-
-
-(* Zapiši funkcijo, ki vrne novo stanje čarodeja (z znižanimi življenskimi točkami [hp]),
-   po tem, ko ga je zadel izbrani urok.
-   (Novo stanje čarodeja je prav tako tipa wizard)
-*)
-
-
-(* Napiši funkcijo, ki za danega čarovnika izvršuje uroke, dokler ne izvede vseh urokov
-   na seznamu, ali pa mu zmanjka točk mane. *)
-let cast_spells wizard : wizard * spell list = failwith "todo"
-
-
-(* Napiši funkcijo, ki simulira spopad dveh čarodejev. V primeru, ko napadalec ne more izvršiti
-   nobenega uroka, napadalec izgubi. V nasprotnem primeru uporabi vse uroke, ki jih lahko.
-   Če branilcu zmanjka življenskih točk, izgubi, sicer pa se vlogi napadalca in branilca zamenjata.
-*)
+(* Write a function that stands off two wizard in a duel. If the attacker is
+   dead, the defender wins. The attacker, if he is still alive, casts his
+   spells. If he cannot cast any spells, he loses. After the attacker casts
+   his spells, the roles change and the defender takes his turn to attack. *)
 let rec duel (attacker : wizard) (defender : wizard) : wizard =
   failwith "todo"
 
-let _ = duel frodo snoop_dogg
+(*let _ = duel frodo snoop_dogg*)
