@@ -62,13 +62,15 @@ end
    "module Cmp_inv (Cmp)" vendar z oznako tipov povemo, da se tip končnega 
    modula ujema s tipom modula, ki ga podamo kot argument. *)
 
-(*
 module Cmp_inv (Cmp : Comparable) : Comparable with type t = Cmp.t  = struct
-  type t = ...
-  let compare x y = ...
+  type t = Cmp.t
+  let compare x y = 
+	match Cmp.compare x y with
+		| LT -> GT
+		| EQ -> EQ
+		| GT -> LT
+		
 end
- *)
-
 
 (* Funktor uporabljamo podobno kot funkcije, le da v tem primeru potrebujemo
    oklepaje okrog argumentov. *)
