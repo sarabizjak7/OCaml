@@ -12,7 +12,7 @@ type 'a tree =
       0   6   11
    *)
 
-let leaf x = Node(Empty, x, Empty) (* Funkcija zakrajši zapis lista drevesa. *)
+let leaf x = Node(Empty, x, Empty) (* Funkcija za krajši zapis lista drevesa. *)
 
 let test_tree = Node( Node(leaf 0, 2, Empty), 5, Node(leaf 6, 7, leaf 11))
 
